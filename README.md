@@ -3,71 +3,199 @@
     <img src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg" alt="Leptos Logo">
 </picture>
 
-# Leptos Starter Template
+# Leptos + Actix + Diesel + PostgreSQL + Tailwind Starter
 
-This is a template for use with the [Leptos](https://github.com/leptos-rs/leptos) web framework and the [cargo-leptos](https://github.com/akesson/cargo-leptos) tool.
+A modern, full-stack web application starter template built with Rust, featuring server-side rendering, type-safe database access, and a beautiful Tailwind CSS UI.
 
-## Creating your template repo
+## Tech Stack
 
-If you don't have `cargo-leptos` installed you can install it with
+- **[Leptos](https://github.com/leptos-rs/leptos)** - Reactive web framework for Rust with SSR and hydration
+- **[Actix Web](https://actix.rs/)** - Fast, ergonomic web framework for the server
+- **[Diesel](https://diesel.rs/)** - Type-safe ORM and query builder for PostgreSQL
+- **[PostgreSQL](https://www.postgresql.org/)** - Powerful, open-source relational database
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 
-`cargo install cargo-leptos --locked`
+## Features
 
-Then run
+- Server-side rendering (SSR) with hydration
+- Type-safe database operations with Diesel ORM
+- PostgreSQL integration with migrations
+- Tailwind CSS for styling
+- Hot-reload development experience
+- Production-optimized WASM builds
 
-`cargo leptos new --git leptos-rs/start-actix`
+## Prerequisites
 
-to generate a new project template (you will be prompted to enter a project name).
+Make sure you have the following installed:
 
-`cd {projectname}`
+- [Rust](https://rustup.rs/) (nightly toolchain)
+- [cargo-leptos](https://github.com/leptos-rs/cargo-leptos)
+- [PostgreSQL](https://www.postgresql.org/download/)
+- [Node.js](https://nodejs.org/) and npm (for Tailwind CSS)
+- [Diesel CLI](https://diesel.rs/guides/getting-started) with PostgreSQL support
 
-to go to your newly created project.
+### Installation Commands
 
-Of course, you should explore around the project structure, but the best place to start with your application code is in `src/app.rs`.
+```bash
+# Install Rust nightly
+rustup toolchain install nightly --allow-downgrade
 
-## Running your project
+# Add WebAssembly target
+rustup target add wasm32-unknown-unknown
 
-`cargo leptos watch`  
-By default, you can access your local project at `http://localhost:3000`
+# Install cargo-leptos
+cargo install cargo-leptos --locked
 
-## Installing Additional Tools
+# Install Diesel CLI with PostgreSQL support
+cargo install diesel_cli --no-default-features --features postgres
 
-By default, `cargo-leptos` uses `nightly` Rust, `cargo-generate`, and `sass`. If you run into any trouble, you may need to install one or more of these tools.
-
-1. `rustup toolchain install nightly --allow-downgrade` - make sure you have Rust nightly
-2. `rustup target add wasm32-unknown-unknown` - add the ability to compile Rust to WebAssembly
-3. `cargo install cargo-generate` - install `cargo-generate` binary (should be installed automatically in future)
-4. `npm install -g sass` - install `dart-sass` (should be optional in future)
-
-## Executing a Server on a Remote Machine Without the Toolchain
-After running a `cargo leptos build --release` the minimum files needed are:
-
-1. The server binary located in `target/server/release`
-2. The `site` directory and all files within located in `target/site`
-
-Copy these files to your remote server. The directory structure should be:
-```text
-leptos_start
-site/
+# Install Node dependencies (Tailwind CSS)
+npm install
 ```
-Set the following environment variables (updating for your project as needed):
-```sh
-export LEPTOS_OUTPUT_NAME="leptos_start"
+
+## Getting Started
+
+### 1. Setup PostgreSQL Database
+
+Create a PostgreSQL database and update the `.env` file:
+
+```bash
+# .env
+DATABASE_URL=postgres://postgres:postgres@localhost/postgres
+```
+
+### 2. Run Migrations
+
+```bash
+diesel migration run
+```
+
+This will set up the database schema, including the `users` table.
+
+### 3. Build Tailwind CSS
+
+```bash
+# Build CSS once
+npm run build:css
+
+# Or watch for changes
+npm run watch:css
+```
+
+### 4. Run the Development Server
+
+```bash
+cargo leptos watch
+```
+
+The application will be available at `http://localhost:3000`
+
+## Project Structure
+
+```
+.
+├── src/
+│   ├── app.rs       # Main application component and routes
+│   ├── lib.rs       # Library entry point
+│   ├── main.rs      # Server entry point
+│   ├── db.rs        # Database connection setup
+│   ├── models.rs    # Diesel models
+│   └── schema.rs    # Auto-generated database schema
+├── migrations/      # Diesel database migrations
+├── assets/          # Static assets
+├── style/           # Tailwind CSS source files
+├── end2end/         # Playwright tests
+├── .env             # Environment variables
+└── Cargo.toml       # Rust dependencies and configuration
+```
+
+## Available Scripts
+
+```bash
+# Development with hot-reload
+cargo leptos watch
+
+# Build for production
+cargo leptos build --release
+
+# Run tests
+cargo test
+
+# Run end-to-end tests
+cargo leptos end-to-end
+
+# Build Tailwind CSS
+npm run build:css
+
+# Watch Tailwind CSS for changes
+npm run watch:css
+
+# Create a new Diesel migration
+diesel migration generate <migration_name>
+
+# Run pending migrations
+diesel migration run
+
+# Revert the last migration
+diesel migration revert
+```
+
+## Database
+
+This template includes a basic `users` table schema:
+
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR NOT NULL UNIQUE,
+  email VARCHAR NOT NULL UNIQUE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+```
+
+You can create additional migrations using:
+
+```bash
+diesel migration generate create_your_table
+```
+
+## Production Deployment
+
+After running `cargo leptos build --release`, you'll need:
+
+1. The server binary from `target/server/release/leptos-actix-diesel-postgres-tailwind`
+2. The `target/site` directory with all static assets
+
+Set these environment variables on your server:
+
+```bash
+export LEPTOS_OUTPUT_NAME="leptos-actix-diesel-postgres-tailwind"
 export LEPTOS_SITE_ROOT="site"
 export LEPTOS_SITE_PKG_DIR="pkg"
 export LEPTOS_SITE_ADDR="127.0.0.1:3000"
 export LEPTOS_RELOAD_PORT="3001"
+export DATABASE_URL="postgres://user:password@localhost/database"
 ```
-Finally, run the server binary.
 
-## Notes about CSR and Trunk:
-Although it is not recommended, you can also run your project without server integration using the feature `csr` and `trunk serve`:
+Then run the binary and ensure PostgreSQL is accessible.
 
-`trunk serve --open --features csr`
+## Development Tips
 
-This may be useful for integrating external tools which require a static site, e.g. `tauri`.
+- Keep `npm run watch:css` running alongside `cargo leptos watch` during development
+- Run `diesel migration run` after pulling new migrations from git
+- The app uses SSR by default; check `src/app.rs` to customize routes
+- Database models are in `src/models.rs` and auto-sync with `src/schema.rs`
 
-## Licensing
+## CSR Mode (Client-Side Rendering Only)
 
-This template itself is released under the Unlicense. You should replace the LICENSE for your own application with an appropriate license if you plan to release it publicly.
-# leptos-actix-diesel-postgres-tailwind
+For static site generation or tools like Tauri:
+
+```bash
+trunk serve --open --features csr
+```
+
+Note: This bypasses the server and database features.
+
+## License
+
+This project is released under the MIT License. Feel free to use it as a starting point for your own applications.
