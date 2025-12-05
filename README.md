@@ -90,23 +90,117 @@ cargo leptos watch
 
 The application will be available at `http://localhost:3000`
 
+## Architecture Overview
+
+This application follows a clean, modular architecture with clear separation of concerns:
+
+### Frontend (Leptos)
+- **Components**: Reusable UI components (`src/components/`)
+  - `Navigation` - Site navigation with cart count and auth state
+  - `ProductCard` - Product display component
+  - `LoginForm` - Authentication form
+  - `ToastContainer` - Notification system
+- **Contexts**: Global state management (`src/contexts/`)
+  - `AuthContext` - User authentication state
+  - `CartContext` - Shopping cart state
+  - `ToastContext` - Notification state
+- **Services**: API communication layer (`src/services/`)
+  - `AuthService` - Authentication operations
+  - `ProductService` - Product and category management
+  - `CartService` - Shopping cart operations
+  - `ApiClient` - HTTP client with error handling
+
+### Backend (Actix Web + Diesel)
+- **Handlers**: API endpoint implementations (`src/handlers/`)
+  - `auth.rs` - User registration and login
+  - `products.rs` - Product and category CRUD operations
+  - `cart.rs` - Shopping cart management
+  - `orders.rs` - Order processing
+  - `middleware.rs` - Authentication middleware
+- **Types**: Shared type definitions (`src/types/`)
+  - `auth.rs` - Authentication types (Claims, User, AuthResponse)
+  - `products.rs` - Product and category types
+  - `cart.rs` - Shopping cart types
+  - `orders.rs` - Order management types
+
+### Database Layer
+- **Models**: Diesel ORM models (`src/models.rs`)
+- **Schema**: Auto-generated database schema (`src/schema.rs`)
+- **Migrations**: Database schema evolution (`migrations/`)
+
 ## Project Structure
 
 ```
 .
 ├── src/
-│   ├── app.rs       # Main application component and routes
-│   ├── lib.rs       # Library entry point
-│   ├── main.rs      # Server entry point
-│   ├── db.rs        # Database connection setup
-│   ├── models.rs    # Diesel models
-│   └── schema.rs    # Auto-generated database schema
-├── migrations/      # Diesel database migrations
-├── assets/          # Static assets
-├── style/           # Tailwind CSS source files
-├── end2end/         # Playwright tests
-├── .env             # Environment variables
-└── Cargo.toml       # Rust dependencies and configuration
+│   ├── app.rs           # Main application component and routes
+│   ├── lib.rs           # Library entry point
+│   ├── main.rs          # Server entry point
+│   ├── db.rs            # Database connection setup
+│   ├── models.rs        # Diesel ORM models
+│   ├── schema.rs        # Auto-generated database schema
+│   ├── components/      # Reusable UI components
+│   │   ├── mod.rs
+│   │   ├── navigation.rs
+│   │   ├── product_card.rs
+│   │   ├── login_form.rs
+│   │   └── toast_container.rs
+│   ├── contexts/        # Global state management
+│   │   ├── mod.rs
+│   │   ├── auth.rs
+│   │   ├── cart.rs
+│   │   └── toast.rs
+│   ├── services/        # API communication layer
+│   │   ├── mod.rs
+│   │   ├── api.rs
+│   │   ├── auth.rs
+│   │   ├── products.rs
+│   │   └── cart.rs
+│   ├── types/           # Shared type definitions
+│   │   ├── mod.rs
+│   │   ├── auth.rs
+│   │   ├── products.rs
+│   │   ├── cart.rs
+│   │   └── orders.rs
+│   └── handlers/        # API endpoint implementations
+│       ├── mod.rs
+│       ├── auth.rs
+│       ├── products.rs
+│       ├── cart.rs
+│       ├── orders.rs
+│       └── middleware.rs
+├── migrations/          # Diesel database migrations
+├── assets/              # Static assets
+├── style/               # Tailwind CSS source files
+├── end2end/             # Playwright end-to-end tests
+├── tests/               # Integration tests
+├── .env                 # Environment variables
+└── Cargo.toml           # Rust dependencies and configuration
+```
+
+## Testing
+
+The application includes comprehensive testing:
+
+### Unit Tests
+```bash
+# Run all unit tests (type serialization tests)
+cargo test
+
+# Run specific test module
+cargo test types::tests
+```
+
+### Integration Tests
+```bash
+# Run integration tests (API endpoint tests)
+cargo test --test integration_tests
+```
+
+### End-to-End Tests
+```bash
+# Run Playwright end-to-end tests
+cargo leptos end-to-end
 ```
 
 ## Available Scripts
@@ -118,8 +212,11 @@ cargo leptos watch
 # Build for production
 cargo leptos build --release
 
-# Run tests
+# Run all tests
 cargo test
+
+# Run integration tests only
+cargo test --test integration_tests
 
 # Run end-to-end tests
 cargo leptos end-to-end
@@ -140,18 +237,42 @@ diesel migration run
 diesel migration revert
 ```
 
-## Database
+## API Endpoints
 
-This template includes a basic `users` table schema:
+The application provides RESTful API endpoints:
 
-```sql
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR NOT NULL UNIQUE,
-  email VARCHAR NOT NULL UNIQUE,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-```
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+
+### Products & Categories
+- `GET /api/products` - List products (with optional filtering)
+- `GET /api/products/{id}` - Get specific product
+- `POST /api/products` - Create product (admin)
+- `GET /api/categories` - List categories
+- `POST /api/categories` - Create category (admin)
+
+### Shopping Cart (Authenticated)
+- `GET /api/cart` - Get user's cart
+- `POST /api/cart` - Add item to cart
+- `PUT /api/cart/{id}` - Update cart item quantity
+- `DELETE /api/cart/{id}` - Remove item from cart
+- `DELETE /api/cart` - Clear entire cart
+
+### Orders (Authenticated)
+- `POST /api/orders` - Create order from cart
+- `GET /api/orders` - Get user's orders
+
+## Database Schema
+
+The application includes the following tables:
+
+- **users**: User accounts with authentication
+- **categories**: Product categories
+- **products**: Product catalog
+- **cart_items**: Shopping cart items
+- **orders**: Order records
+- **order_items**: Order line items
 
 You can create additional migrations using:
 
@@ -199,6 +320,4 @@ Note: This bypasses the server and database features.
 ## License
 
 This project is released under the MIT License. Feel free to use it as a starting point for your own applications.
-# Starter-projek-with-rust
-# Restaurant_Ordering_Sistem
-# Restaurant_Ordering_Sistem
+# Online_Store
